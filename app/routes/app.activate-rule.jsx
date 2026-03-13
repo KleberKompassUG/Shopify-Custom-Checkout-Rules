@@ -1,4 +1,3 @@
-import { json } from "@remix-run/node";
 import { useFetcher } from "react-router";
 import { authenticate } from "../shopify.server";
 
@@ -49,7 +48,7 @@ export const action = async ({ request }) => {
 
   const jsonResponse = await response.json();
 
-  return json(jsonResponse);
+  return Response.json(jsonResponse);
 };
 
 export default function ActivateRule() {
