@@ -2,7 +2,7 @@
 
 client_id = "c3f2c3ced0e813271deccbdc5a1647ae"
 name = "Custom Checkout Rules"
-application_url = "https://example.com"
+application_url = "https://shopify-custom-checkout-rules.vercel.app/"
 embedded = true
 
 [build]
@@ -24,7 +24,7 @@ api_version = "2026-04"
 scopes = "write_metaobject_definitions,write_metaobjects,write_payment_customizations,write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://shopify-custom-checkout-rules.vercel.app/api/auth" ]
 
 [product.metafields.app.demo_info]
 type = "single_line_text_field"
