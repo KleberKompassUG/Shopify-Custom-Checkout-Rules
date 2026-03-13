@@ -1,11 +1,7 @@
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { authenticate } from "../shopify.server";
-
 import { redirect } from "react-router";
 import { authenticate } from "../shopify.server";
 
-import { redirect } from "react-router";
-import { authenticate } from "../shopify.server";
 
 const FUNCTION_ID = "4f8a281d-8599-ed4f-dd32-1297c2872b96939fbf00";
 
