@@ -2,7 +2,7 @@
 
 client_id = "c3f2c3ced0e813271deccbdc5a1647ae"
 name = "Custom Checkout Rules"
-application_url = "https://shopify-custom-checkout-rules.vercel.app/"
+application_url = "https://shopify-custom-checkout-rules.vercel.app"
 embedded = true
 
 [build]
