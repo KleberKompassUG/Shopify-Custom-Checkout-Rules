@@ -1,1 +1,1 @@
-export const db = {};
+export default {};
