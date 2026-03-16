@@ -16,6 +16,9 @@ const { shop, topic, payload } = await authenticate.webhook(request);
     case "SHOP_REDACT":
       console.log(`No shop data stored. Acknowledging shop deletion request for shop: ${shop}`);
       break;
+    case "APP_UNINSTALLED":
+      console.log(`App uninstalled from shop: ${shop}`);
+      break;
     default:
       console.warn(`Unhandled webhook topic: ${topic}`);
       return new Response("Unhandled webhook topic", { status: 400 });

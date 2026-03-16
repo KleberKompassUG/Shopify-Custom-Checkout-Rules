@@ -4,8 +4,7 @@ import {
   AppDistribution,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
-// MemorySessionStorage is sufficient for single-instance Vercel deployments
-import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
+import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -14,7 +13,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
-  sessionStorage: new MemorySessionStorage(),
+  sessionStorage: new RedisSessionStorage(process.env.REDIS_URL),
   distribution: AppDistribution.AppStore,
 
 
