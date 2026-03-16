@@ -5,6 +5,11 @@ import {
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
 import { RedisSessionStorage } from "@shopify/shopify-app-session-storage-redis";
+import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
+
+const storage = process.env.REDIS_URL
+  ? new RedisSessionStorage(process.env.REDIS_URL)
+  : new MemorySessionStorage();
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -13,7 +18,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
-  sessionStorage: new RedisSessionStorage(process.env.REDIS_URL),
+  sessionStorage: storage,
   distribution: AppDistribution.AppStore,
 
 
