@@ -9,7 +9,7 @@ export default function AdditionalPage() {
       <s-section heading="About this app">
         <s-card>
           <s-paragraph>
-            <strong>Custom Checkout Rules</strong> lets you hide specific payment methods at checkout based on the
+            <strong>Hide Invoice for non B2B</strong> lets you hide specific payment methods at checkout based on the
             customer context (for example, B2B eligibility) and the shipping address company field.
           </s-paragraph>
           <s-paragraph>
