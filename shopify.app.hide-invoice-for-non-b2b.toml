@@ -11,9 +11,9 @@ automatically_update_urls_on_dev = true
 [webhooks]
 api_version = "2026-01"
 
-[[webhooks.subscriptions]]
-compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
-uri = "https://custom-checkout-rules.vercel.app/webhooks"
+  [[webhooks.subscriptions]]
+  uri = "/webhooks"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -22,6 +22,4 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [
-  "https://custom-checkout-rules.vercel.app/auth/callback"
-]
+redirect_urls = [ "https://custom-checkout-rules.vercel.app/auth/callback" ]
