@@ -18,9 +18,9 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>Hide Payment Methods for Non-B2B Customers</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Control which payment methods appear at checkout based on your customer's B2B status.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
@@ -36,16 +36,13 @@ export default function App() {
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>B2B-aware checkout</strong>. Automatically hide or show payment methods based on whether a customer is a verified B2B buyer.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>No code required</strong>. Configure your rules directly from the Shopify admin — no theme changes needed.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Powered by Shopify Functions</strong>. Runs natively at checkout for fast, reliable payment method filtering.
           </li>
         </ul>
       </div>
