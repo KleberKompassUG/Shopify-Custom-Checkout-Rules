@@ -62,7 +62,7 @@ export default function Index() {
         </s-card>
       </s-section>
 
-      <s-section heading="Current status">
+      <s-section heading="Current rule status">
         <s-card>
           <s-unordered-list>
             <s-list-item>
@@ -81,16 +81,26 @@ export default function Index() {
       <s-section slot="aside" heading="Next steps">
         <s-card>
           <s-unordered-list>
-            <s-list-item>
-              <strong>Test</strong>: place two test checkouts (one with company filled, one without).
+          <s-list-item>
+              <strong>Activate Rule</strong>: Click on Configure payment rule, add the payment method name (e.g. "Cash on delivery") you want to hide and activate the rule.
             </s-list-item>
             <s-list-item>
-              <strong>Security</strong>: settings are stored per shop in a Shop metafield.
+              <strong>Test Case 1</strong>: place two test checkouts (one with company field filled, one without) and check if the desired payment method is hidden or not.
             </s-list-item>
             <s-list-item>
-              <strong>Publish readiness</strong>: add clear help text, consistent navigation, and predictable behavior.
+              <strong>Test Case 2</strong>: place two test checkouts (one with customer tag "b2b", one without) and check if the desired payment method is hidden or not.
             </s-list-item>
           </s-unordered-list>
+        </s-card>
+      </s-section>
+      <s-section slot="aside" heading="Need Support?">
+        <s-card>
+          <s-paragraph>
+            <strong>Contact</strong>: <s-link href="mailto:max.wieber@kleberkompass.de">max.wieber@kleberkompass.de</s-link>
+          </s-paragraph>
+          <s-paragraph>
+            <strong>Response time</strong>: within 1 business day
+          </s-paragraph>
         </s-card>
       </s-section>
     </s-page>

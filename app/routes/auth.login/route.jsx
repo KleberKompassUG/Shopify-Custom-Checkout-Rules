@@ -1,46 +1,35 @@
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
-import { useState } from "react";
-import { Form, useActionData, useLoaderData } from "react-router";
-import { login } from "../../shopify.server";
-import { loginErrorMessage } from "./error.server";
+import { useLoaderData } from "react-router";
 
 export const loader = async ({ request }) => {
-  const errors = loginErrorMessage(await login(request));
+  const url = new URL(request.url);
+  const shop = url.searchParams.get("shop");
 
-  return { errors };
-};
-
-export const action = async ({ request }) => {
-  const errors = loginErrorMessage(await login(request));
-
-  return {
-    errors,
-  };
+  return { shop };
 };
 
 export default function Auth() {
-  const loaderData = useLoaderData();
-  const actionData = useActionData();
-  const [shop, setShop] = useState("");
-  const { errors } = actionData || loaderData;
+  const { shop } = useLoaderData();
 
   return (
     <AppProvider embedded={false}>
       <s-page>
-        <Form method="post">
-          <s-section heading="Log in">
-            <s-text-field
-              name="shop"
-              label="Shop domain"
-              details="example.myshopify.com"
-              value={shop}
-              onChange={(e) => setShop(e.currentTarget.value)}
-              autocomplete="on"
-              error={errors.shop}
-            ></s-text-field>
-            <s-button type="submit">Log in</s-button>
-          </s-section>
-        </Form>
+        <s-section heading="Open this app from Shopify">
+          <s-card>
+            <s-paragraph>
+              This app is designed to be launched from the Shopify admin as an embedded app.
+            </s-paragraph>
+            {shop ? (
+              <s-paragraph>
+                Shop: <strong>{shop}</strong>
+              </s-paragraph>
+            ) : (
+              <s-paragraph>
+                No shop context was provided. Please open the app from your Shopify admin Apps list.
+              </s-paragraph>
+            )}
+          </s-card>
+        </s-section>
       </s-page>
     </AppProvider>
   );

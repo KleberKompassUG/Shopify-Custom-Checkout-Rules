@@ -8,6 +8,9 @@ const DEFAULT_CONFIG = {
   paymentMethodNameIncludes: "Rechnung",
 };
 
+const PAYMENT_CUSTOMIZATION_TITLE = "Custom Checkout Rules";
+const PAYMENT_FUNCTION_HANDLE = "payment-customization";
+
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
   if (url.pathname === "/app/activate-rule") {
@@ -25,12 +28,23 @@ export const loader = async ({ request }) => {
           value
         }
       }
+      paymentCustomizations(first: 50) {
+        nodes {
+          id
+          title
+          enabled
+        }
+      }
     }
   `,
   );
 
   const json = await response.json();
   const metafield = json.data?.shop?.metafield;
+  const paymentCustomizations = json.data?.paymentCustomizations?.nodes ?? [];
+  const currentCustomization =
+    paymentCustomizations.find((c) => c?.title === PAYMENT_CUSTOMIZATION_TITLE) ??
+    null;
 
   let config = DEFAULT_CONFIG;
 
@@ -49,12 +63,139 @@ export const loader = async ({ request }) => {
   return {
     shopId: json.data?.shop?.id ?? null,
     config,
+    customization: currentCustomization
+      ? {
+          id: currentCustomization.id,
+          enabled: Boolean(currentCustomization.enabled),
+          title: currentCustomization.title,
+        }
+      : null,
   };
 };
 
 export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
   const formData = await request.formData();
+
+  const intent = (formData.get("intent") || "save").toString();
+
+  if (intent === "ensure_customization") {
+    const listResponse = await admin.graphql(
+      `#graphql
+      query ListPaymentCustomizations {
+        paymentCustomizations(first: 50) {
+          nodes {
+            id
+            title
+            enabled
+          }
+        }
+      }
+    `,
+    );
+    const listJson = await listResponse.json();
+    const nodes = listJson.data?.paymentCustomizations?.nodes ?? [];
+    const existing =
+      nodes.find((c) => c?.title === PAYMENT_CUSTOMIZATION_TITLE) ?? null;
+
+    if (!existing) {
+      const createResponse = await admin.graphql(
+        `#graphql
+        mutation CreatePaymentCustomization($title: String!, $functionHandle: String!) {
+          paymentCustomizationCreate(
+            paymentCustomization: {
+              title: $title
+              enabled: true
+              functionHandle: $functionHandle
+            }
+          ) {
+            paymentCustomization {
+              id
+              enabled
+              title
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+      `,
+        {
+          variables: {
+            title: PAYMENT_CUSTOMIZATION_TITLE,
+            functionHandle: PAYMENT_FUNCTION_HANDLE,
+          },
+        },
+      );
+
+      const createJson = await createResponse.json();
+      const userErrors =
+        createJson.data?.paymentCustomizationCreate?.userErrors ?? [];
+
+      if (userErrors.length > 0) {
+        return Response.json(
+          {
+            ok: false,
+            error: userErrors.map((e) => e.message).join(", "),
+          },
+          { status: 400 },
+        );
+      }
+
+      return Response.json({
+        ok: true,
+        customization:
+          createJson.data.paymentCustomizationCreate.paymentCustomization,
+      });
+    }
+
+    if (existing.enabled) {
+      return Response.json({ ok: true, customization: existing });
+    }
+
+    const updateResponse = await admin.graphql(
+      `#graphql
+      mutation EnablePaymentCustomization($id: ID!) {
+        paymentCustomizationUpdate(
+          id: $id
+          paymentCustomization: { enabled: true }
+        ) {
+          paymentCustomization {
+            id
+            enabled
+            title
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `,
+      { variables: { id: existing.id } },
+    );
+
+    const updateJson = await updateResponse.json();
+    const updateErrors =
+      updateJson.data?.paymentCustomizationUpdate?.userErrors ?? [];
+
+    if (updateErrors.length > 0) {
+      return Response.json(
+        {
+          ok: false,
+          error: updateErrors.map((e) => e.message).join(", "),
+        },
+        { status: 400 },
+      );
+    }
+
+    return Response.json({
+      ok: true,
+      customization:
+        updateJson.data.paymentCustomizationUpdate.paymentCustomization,
+    });
+  }
 
   const enabled = formData.get("enabled") === "on";
   const paymentMethodNameIncludes =
@@ -134,7 +275,9 @@ export const action = async ({ request }) => {
 export default function ActivateRule() {
   const loaderData = useLoaderData();
   const config = loaderData?.config ?? DEFAULT_CONFIG;
+  const customization = loaderData?.customization ?? null;
   const fetcher = useFetcher();
+  const customizationFetcher = useFetcher();
   const navigation = useNavigation();
   const [toggleChecked, setToggleChecked] = useState(Boolean(config.enabled));
 
@@ -155,10 +298,51 @@ export default function ActivateRule() {
       ? fetcher.data?.error || "Failed to save settings"
       : null;
 
+  const customizationError =
+    customizationFetcher.state === "idle" &&
+    customizationFetcher.data?.ok === false
+      ? customizationFetcher.data?.error || "Failed to activate customization"
+      : null;
+
   return (
     <s-page heading="Payment rule">
       <s-section heading="B2B invoice rule">
         <s-card>
+          {!customization || customization.enabled === false ? (
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  padding: 12,
+                  borderRadius: 8,
+                  border: "1px solid #E1E3E5",
+                  background: "#F6F6F7",
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                  Payment customization status
+                </div>
+                <div style={{ fontSize: 12, color: "#6d7175", marginBottom: 10 }}>
+                  {customization
+                    ? "A customization exists but is currently disabled."
+                    : "No payment customization exists yet for this app."}
+                </div>
+
+                {customizationError ? (
+                  <div style={{ fontSize: 12, color: "#8E1F0B", marginBottom: 10 }}>
+                    {customizationError}
+                  </div>
+                ) : null}
+
+                <customizationFetcher.Form method="post">
+                  <input type="hidden" name="intent" value="ensure_customization" />
+                  <s-button submit loading={customizationFetcher.state !== "idle"}>
+                    {customization ? "Enable" : "Create & enable"}
+                  </s-button>
+                </customizationFetcher.Form>
+              </div>
+            </div>
+          ) : null}
+
           <fetcher.Form
             method="post"
             key={JSON.stringify(pendingConfig)}

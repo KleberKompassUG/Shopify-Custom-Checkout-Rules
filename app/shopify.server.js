@@ -4,7 +4,9 @@ import {
   AppDistribution,
   shopifyApp,
 } from "@shopify/shopify-app-react-router/server";
-import { MemorySessionStorage } from "@shopify/shopify-app-session-storage-memory";
+import sqliteSessionStoragePkg from "@shopify/shopify-app-session-storage-sqlite";
+
+const { SQLiteSessionStorage } = sqliteSessionStoragePkg;
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -13,7 +15,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
-  sessionStorage: new MemorySessionStorage(),
+  sessionStorage: new SQLiteSessionStorage("./shopify_sessions.sqlite"),
   distribution: AppDistribution.AppStore,
 
 

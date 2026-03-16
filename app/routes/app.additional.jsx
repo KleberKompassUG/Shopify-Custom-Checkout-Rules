@@ -87,13 +87,13 @@ export default function AdditionalPage() {
         </s-card>
       </s-section>
 
-      <s-section slot="aside" heading="Support">
+      <s-section slot="aside" heading="Need Support?">
         <s-card>
           <s-paragraph>
             <strong>Contact</strong>: <s-link href="mailto:max.wieber@kleberkompass.de">max.wieber@kleberkompass.de</s-link>
           </s-paragraph>
           <s-paragraph>
-            <strong>Response time</strong>: within 2 business days (placeholder)
+            <strong>Response time</strong>: within 1 business day
           </s-paragraph>
         </s-card>
       </s-section>
@@ -108,9 +108,11 @@ export default function AdditionalPage() {
             field at runtime to decide whether to hide a payment method.
           </s-paragraph>
           <s-paragraph>
-            <strong>Placeholder policy</strong>: replace this section with your real privacy policy and data
-            handling details before publishing.
+            <strong>Data policy</strong>: The Apps code is stored on Vercel Cloud.
           </s-paragraph>
+          <s-list-item>
+              <strong>Security</strong>: settings are stored per shop in a Shop metafield.
+            </s-list-item>
         </s-card>
       </s-section>
     </s-page>
