@@ -5,7 +5,7 @@ import { authenticate } from "../shopify.server";
 
 const DEFAULT_CONFIG = {
   enabled: true,
-  paymentMethodNameIncludes: "Rechnung",
+  paymentMethodNameIncludes: "Cash on Delivery",
 };
 
 const PAYMENT_CUSTOMIZATION_TITLE = "Custom Checkout Rules";
@@ -356,7 +356,7 @@ export default function ActivateRule() {
                   <div>
                     <div style={{ fontWeight: 600 }}>Rule active</div>
                     <div style={{ fontSize: 12, color: "#6d7175", marginTop: 2 }}>
-                    Hides the defined payment method for non-B2B customers without a company name in the checkout.
+                    Hides the defined payment method for non-B2B customers without a company name added <br/> or without b2b customer tag dynamically in the checkout.
                     </div>
                   </div>
 
