@@ -90,7 +90,7 @@ export default function AdditionalPage() {
       <s-section slot="aside" heading="Support">
         <s-card>
           <s-paragraph>
-            <strong>Contact</strong>: <s-link href="mailto:support@example.com">support@example.com</s-link>
+            <strong>Contact</strong>: <s-link href="mailto:max.wieber@kleberkompass.de">max.wieber@kleberkompass.de</s-link>
           </s-paragraph>
           <s-paragraph>
             <strong>Response time</strong>: within 2 business days (placeholder)

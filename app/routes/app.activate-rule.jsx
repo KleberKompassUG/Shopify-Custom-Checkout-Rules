@@ -183,9 +183,9 @@ export default function ActivateRule() {
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                   <div>
-                    <div style={{ fontWeight: 600 }}>Rule aktiv</div>
+                    <div style={{ fontWeight: 600 }}>Rule active</div>
                     <div style={{ fontSize: 12, color: "#6d7175", marginTop: 2 }}>
-                      Versteckt die definierte Zahlungsart für Nicht‑B2B Kunden ohne Firma im Checkout.
+                    Hides the defined payment method for non-B2B customers without a company name in the checkout.
                     </div>
                   </div>
 
@@ -232,7 +232,7 @@ export default function ActivateRule() {
                   </label>
                 </div>
 
-                <div style={{ marginTop: 16 }}>
+                <div style={{ marginTop: 16, maxWidth: 520 }}>
                   <label style={{ display: "block", fontWeight: 500, marginBottom: 4 }}>
                     Payment method name contains
                   </label>
@@ -240,7 +240,17 @@ export default function ActivateRule() {
                     type="text"
                     name="paymentMethodNameIncludes"
                     defaultValue={pendingConfig.paymentMethodNameIncludes}
-                    style={{ width: "100%", padding: "8px 10px" }}
+                    style={{
+                      width: "100%",
+                      maxWidth: "100%",
+                      boxSizing: "border-box",
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      border: "1px solid #c9cccf",
+                      background: "#ffffff",
+                      fontSize: 14,
+                      lineHeight: "20px",
+                    }}
                   />
                   <p style={{ marginTop: 4, fontSize: 12, color: "#6d7175" }}>
                     The payment method whose name contains this text will be hidden unless the
@@ -248,7 +258,7 @@ export default function ActivateRule() {
                   </p>
                 </div>
 
-                <div style={{ marginTop: 16 }}>
+                <div style={{ marginTop: 16, maxWidth: 520 }}>
                   <label style={{ display: "block", fontWeight: 500, marginBottom: 4 }}>
                     Customer tag used
                   </label>
@@ -257,7 +267,18 @@ export default function ActivateRule() {
                     name="customerTag"
                     defaultValue="b2b"
                     disabled
-                    style={{ width: "100%", padding: "8px 10px", background: "#f6f6f7" }}
+                    style={{
+                      width: "100%",
+                      maxWidth: "100%",
+                      boxSizing: "border-box",
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      border: "1px solid #e1e3e5",
+                      background: "#f6f6f7",
+                      color: "#6d7175",
+                      fontSize: 14,
+                      lineHeight: "20px",
+                    }}
                   />
                   <p style={{ marginTop: 4, fontSize: 12, color: "#6d7175" }}>
                     The B2B customer tag is currently fixed to “b2b” in this version of the app.
