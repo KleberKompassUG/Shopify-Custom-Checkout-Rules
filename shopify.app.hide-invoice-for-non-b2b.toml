@@ -2,7 +2,7 @@
 
 client_id = "12939f051ff255388d029554440f329b"
 name = "Hide Invoice for non B2B"
-application_url = "https://example.com"
+application_url = "https://shopify-custom-checkout-rules.vercel.app"
 embedded = true
 
 [build]
@@ -12,18 +12,20 @@ automatically_update_urls_on_dev = true
 api_version = "2026-01"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
-
-  [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
 
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+scopes = "read_payment_customizations,write_payment_customizations"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ ]
+redirect_urls = [
+  "https://shopify-custom-checkout-rules.vercel.app/auth/callback"
+]

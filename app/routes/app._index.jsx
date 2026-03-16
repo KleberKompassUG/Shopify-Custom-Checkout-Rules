@@ -19,8 +19,9 @@ export const loader = async ({ request }) => {
   );
 
   const json = await response.json();
-  const shopName = json.data?.shop?.name ?? "your store";
-  const metafieldValue = json.data?.shop?.metafield?.value ?? null;
+  const shop = json.data?.shop;
+  const shopName = shop?.name ?? "your store";
+  const metafieldValue = shop?.metafield?.value ?? null;
 
   let config = { enabled: true, paymentMethodNameIncludes: "Rechnung" };
   if (typeof metafieldValue === "string" && metafieldValue.trim() !== "") {
