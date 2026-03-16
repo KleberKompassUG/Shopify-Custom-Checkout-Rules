@@ -2,7 +2,7 @@
 
 client_id = "12939f051ff255388d029554440f329b"
 name = "Hide Invoice for non B2B"
-application_url = "https://shopify-custom-checkout-rules.vercel.app"
+application_url = "https://custom-checkout-rules.vercel.app"
 embedded = true
 
 [build]
@@ -23,5 +23,5 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://shopify-custom-checkout-rules.vercel.app/auth/callback"
+  "https://custom-checkout-rules.vercel.app/auth/callback"
 ]
