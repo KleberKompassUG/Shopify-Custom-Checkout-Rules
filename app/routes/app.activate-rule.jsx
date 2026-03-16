@@ -1,72 +1,181 @@
+import { useLoaderData, useNavigation } from "react-router";
 import { useFetcher } from "react-router";
 import { authenticate } from "../shopify.server";
 
-export const action = async ({ request }) => {
+const DEFAULT_CONFIG = {
+  enabled: true,
+  paymentMethodNameIncludes: "Rechnung",
+};
+
+export const loader = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
 
-  // Function ID holen
-  const functionResponse = await admin.graphql(`
-    {
-      shopifyFunctions(first: 10) {
-        nodes {
-          id
-          title
+  const response = await admin.graphql(
+    `#graphql
+    query AppRuleConfig {
+      shop {
+        id
+        metafield(namespace: "$app", key: "payment_rule") {
+          value
         }
       }
     }
-  `);
-
-  const functionJson = await functionResponse.json();
-
-  const paymentFunction = functionJson.data.shopifyFunctions.nodes.find(
-    f => f.title.includes("payment")
+  `,
   );
 
-  const functionId = paymentFunction.id;
+  const json = await response.json();
+  const metafield = json.data?.shop?.metafield;
 
-  // Payment Rule erstellen
-  const response = await admin.graphql(`
-    mutation createPaymentCustomization($functionId: String!) {
-      paymentCustomizationCreate(
-        paymentCustomization: {
-          title: "Custom Checkout Rules"
-          enabled: true
-          functionId: $functionId
-        }
-      ) {
-        paymentCustomization {
+  let config = DEFAULT_CONFIG;
+
+  if (metafield?.value) {
+    try {
+      const parsed = JSON.parse(metafield.value);
+      config = {
+        ...DEFAULT_CONFIG,
+        ...parsed,
+      };
+    } catch (_error) {
+      config = DEFAULT_CONFIG;
+    }
+  }
+
+  return {
+    shopId: json.data?.shop?.id ?? null,
+    config,
+  };
+};
+
+export const action = async ({ request }) => {
+  const { admin } = await authenticate.admin(request);
+  const formData = await request.formData();
+
+  const enabled = formData.get("enabled") === "on";
+  const paymentMethodNameIncludes =
+    (formData.get("paymentMethodNameIncludes") || "").toString().trim() ||
+    DEFAULT_CONFIG.paymentMethodNameIncludes;
+
+  const config = {
+    enabled,
+    paymentMethodNameIncludes,
+  };
+
+  const shopResponse = await admin.graphql(
+    `#graphql
+    query GetShopId {
+      shop {
+        id
+      }
+    }
+  `,
+  );
+
+  const shopJson = await shopResponse.json();
+  const shopId = shopJson.data?.shop?.id;
+
+  if (!shopId) {
+    return Response.json(
+      { ok: false, error: "Unable to resolve shop id" },
+      { status: 500 },
+    );
+  }
+
+  const metafieldsResponse = await admin.graphql(
+    `#graphql
+    mutation SetRuleMetafield($metafields: [MetafieldsSetInput!]!) {
+      metafieldsSet(metafields: $metafields) {
+        metafields {
           id
         }
         userErrors {
+          field
           message
         }
       }
     }
-  `, {
-    variables: { functionId }
-  });
+  `,
+    {
+      variables: {
+        metafields: [
+          {
+            ownerId: shopId,
+            namespace: "$app",
+            key: "payment_rule",
+            type: "json",
+            value: JSON.stringify(config),
+          },
+        ],
+      },
+    },
+  );
 
-  const jsonResponse = await response.json();
+  const metafieldsJson = await metafieldsResponse.json();
+  const userErrors = metafieldsJson.data?.metafieldsSet?.userErrors || [];
 
-  return Response.json(jsonResponse);
+  if (userErrors.length > 0) {
+    return Response.json(
+      {
+        ok: false,
+        error: userErrors.map((e) => e.message).join(", "),
+      },
+      { status: 400 },
+    );
+  }
+
+  return Response.json({ ok: true, config });
 };
 
 export default function ActivateRule() {
+  const { config } = useLoaderData();
   const fetcher = useFetcher();
+  const navigation = useNavigation();
+
+  const isSubmitting =
+    navigation.state === "submitting" || fetcher.state === "submitting";
+
+  const pendingConfig =
+    fetcher.state === "idle" && fetcher.data?.config
+      ? fetcher.data.config
+      : config;
 
   return (
-    <div style={{padding:20}}>
-      <h1>Activate Checkout Rule</h1>
+    <s-page heading="Checkout rule settings">
+      <s-section heading="B2B invoice rule">
+        <s-card>
+          <fetcher.Form method="post">
+            <s-layout>
+              <s-layout-section>
+                <s-checkbox
+                  name="enabled"
+                  label="Enable rule"
+                  defaultChecked={Boolean(pendingConfig.enabled)}
+                />
 
-      <fetcher.Form method="post">
-        <button type="submit">
-          Activate Payment Rule
-        </button>
-      </fetcher.Form>
+                <s-text-field
+                  label="Payment method name contains"
+                  name="paymentMethodNameIncludes"
+                  defaultValue={pendingConfig.paymentMethodNameIncludes}
+                  helpText="The payment method whose name contains this text will be hidden unless the customer is B2B or has a company set on the shipping address."
+                />
 
-      {fetcher.data && (
-        <pre>{JSON.stringify(fetcher.data, null, 2)}</pre>
-      )}
-    </div>
+                <s-text-field
+                  label="Customer tag used"
+                  name="customerTag"
+                  defaultValue="b2b"
+                  disabled
+                  helpText="The B2B customer tag is currently fixed to “b2b” in this version of the app."
+                />
+              </s-layout-section>
+
+              <s-layout-section>
+                <s-button submit loading={isSubmitting}>
+                  Save settings
+                </s-button>
+              </s-layout-section>
+            </s-layout>
+          </fetcher.Form>
+        </s-card>
+      </s-section>
+    </s-page>
   );
 }

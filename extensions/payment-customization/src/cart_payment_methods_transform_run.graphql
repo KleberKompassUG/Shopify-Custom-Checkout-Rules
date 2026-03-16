@@ -1,13 +1,12 @@
 query CartPaymentMethodsTransformRunInput {
-  cart {
-    cost {
-      totalAmount {
-        amount
-      }
+  shop {
+    metafield(namespace: "$app", key: "payment_rule") {
+      value
     }
+  }
+  cart {
     buyerIdentity {
       customer {
-        id
         hasAnyTag(tags: ["b2b"])
       }
     }
