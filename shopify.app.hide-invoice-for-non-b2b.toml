@@ -17,7 +17,7 @@ uri = "/webhooks"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_payment_customizations,write_payment_customizations,read_metafields,write_metafields"
+scopes = "read_payment_customizations,write_payment_customizations"
 optional_scopes = [ ]
 use_legacy_install_flow = false
 
