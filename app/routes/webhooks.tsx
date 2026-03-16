@@ -2,6 +2,8 @@ import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log("Webhook hit:", request.method, request.url);
+  console.log("HMAC header:", request.headers.get("x-shopify-hmac-sha256"));
   const { shop, topic, payload } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook from ${shop}`);
