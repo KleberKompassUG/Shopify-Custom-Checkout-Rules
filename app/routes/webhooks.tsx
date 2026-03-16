@@ -9,13 +9,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   console.log(`Received ${topic} webhook from ${shop}`);
 
   switch (topic) {
-    case "customers/data_request":
+    case "CUSTOMERS_DATA_REQUEST":
       console.log(`No customer data stored. Responding to data request for shop: ${shop}`);
       break;
-    case "customers/redact":
+    case "CUSTOMERS_REDACT":
       console.log(`No customer data stored. Ignoring redaction request for shop: ${shop}`);
       break;
-    case "shop/redact":
+    case "SHOP_REDACT":
       console.log(`No shop data stored. Acknowledging shop deletion request for shop: ${shop}`);
       break;
     default:
