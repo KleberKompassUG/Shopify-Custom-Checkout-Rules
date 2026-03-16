@@ -42,7 +42,7 @@ export default function Index() {
   const search = location.search || "";
 
   return (
-    <s-page heading="Custom Checkout Rules">
+    <s-page heading="Hide Invoice for non B2B">
       <s-section heading="Overview">
         <s-card>
           <s-layout>
