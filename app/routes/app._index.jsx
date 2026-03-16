@@ -14,6 +14,12 @@ export const loader = async ({ request }) => {
           value
         }
       }
+      paymentCustomizations(first: 50) {
+        nodes {
+          title
+          enabled
+        }
+      }
     }
   `,
   );
@@ -23,7 +29,10 @@ export const loader = async ({ request }) => {
   const shopName = shop?.name ?? "your store";
   const metafieldValue = shop?.metafield?.value ?? null;
 
-  let config = { enabled: false, paymentMethodNameIncludes: "Cash on Delivery" };
+  const customization = (json.data?.paymentCustomizations?.nodes ?? [])
+    .find((c) => c?.title === "Custom Checkout Rules") ?? null;
+
+  let config = { enabled: false, paymentMethodNameIncludes: "" };
   if (typeof metafieldValue === "string" && metafieldValue.trim() !== "") {
     try {
       const parsed = JSON.parse(metafieldValue);
@@ -32,6 +41,9 @@ export const loader = async ({ request }) => {
       // keep defaults
     }
   }
+
+  // Use the actual Shopify customization enabled state as source of truth
+  config.enabled = customization ? Boolean(customization.enabled) : false;
 
   return { shopName, config };
 };
