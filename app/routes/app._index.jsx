@@ -1,152 +1,97 @@
-import { useEffect } from "react";
-import { useFetcher } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
-import ActivateRule from "./app.activate-rule";
+import { useLoaderData, useLocation } from "react-router";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-
-  return null;
-};
-
-export const action = async ({ request }) => {
   const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
+
   const response = await admin.graphql(
     `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-            demoInfo: metafield(namespace: "$app", key: "demo_info") {
-              jsonValue
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-          metafields: [
-            {
-              namespace: "$app",
-              key: "demo_info",
-              value: "Created by React Router Template",
-            },
-          ],
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
-  const product = responseJson.data.productCreate.product;
-  const variantId = product.variants.edges[0].node.id;
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
+    query OverviewConfig {
+      shop {
+        name
+        metafield(namespace: "$app", key: "payment_rule") {
+          value
         }
       }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
+    }
+  `,
   );
-  const variantResponseJson = await variantResponse.json();
-  const metaobjectResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpsertMetaobject($handle: MetaobjectHandleInput!, $metaobject: MetaobjectUpsertInput!) {
-      metaobjectUpsert(handle: $handle, metaobject: $metaobject) {
-        metaobject {
-          id
-          handle
-          title: field(key: "title") {
-            jsonValue
-          }
-          description: field(key: "description") {
-            jsonValue
-          }
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }`,
-    {
-      variables: {
-        handle: {
-          type: "$app:example",
-          handle: "demo-entry",
-        },
-        metaobject: {
-          fields: [
-            { key: "title", value: "Demo Entry" },
-            {
-              key: "description",
-              value:
-                "This metaobject was created by the Shopify app template to demonstrate the metaobject API.",
-            },
-          ],
-        },
-      },
-    },
-  );
-  const metaobjectResponseJson = await metaobjectResponse.json();
 
-  return {
-    product: responseJson.data.productCreate.product,
-    variant: variantResponseJson.data.productVariantsBulkUpdate.productVariants,
-    metaobject: metaobjectResponseJson.data.metaobjectUpsert.metaobject,
-  };
+  const json = await response.json();
+  const shopName = json.data?.shop?.name ?? "your store";
+  const metafieldValue = json.data?.shop?.metafield?.value ?? null;
+
+  let config = { enabled: true, paymentMethodNameIncludes: "Rechnung" };
+  if (typeof metafieldValue === "string" && metafieldValue.trim() !== "") {
+    try {
+      const parsed = JSON.parse(metafieldValue);
+      config = { ...config, ...parsed };
+    } catch (_error) {
+      // keep defaults
+    }
+  }
+
+  return { shopName, config };
 };
 
 export default function Index() {
-  const fetcher = useFetcher();
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
-
-  useEffect(() => {
-    if (fetcher.data?.product?.id) {
-      shopify.toast.show("Product created");
-    }
-  }, [fetcher.data?.product?.id, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+  const { shopName, config } = useLoaderData();
+  const location = useLocation();
+  const search = location.search || "";
 
   return (
-    <s-page heading="Shopify app template">
-      <s-section heading="checkout Rules">
-        <s-button href="/app/activate-rule">
-          Activate Checkout Rule
-        </s-button>
+    <s-page heading="Custom Checkout Rules">
+      <s-section heading="Overview">
+        <s-card>
+          <s-layout>
+            <s-layout-section>
+              <s-paragraph>
+                Manage checkout payment method visibility rules for <strong>{shopName}</strong>.
+              </s-paragraph>
+              <s-paragraph>
+                This app uses a Shopify Payment Customization Function to hide a payment method unless the customer
+                is eligible (B2B tag) or the checkout address includes a company.
+              </s-paragraph>
+            </s-layout-section>
+
+            <s-layout-section>
+              <s-button href={`/app/rules/payment${search}`}>Configure payment rule</s-button>
+            </s-layout-section>
+          </s-layout>
+        </s-card>
+      </s-section>
+
+      <s-section heading="Current status">
+        <s-card>
+          <s-unordered-list>
+            <s-list-item>
+              <strong>Rule enabled</strong>: {config.enabled ? "Yes" : "No"}
+            </s-list-item>
+            <s-list-item>
+              <strong>Payment method match</strong>: “{config.paymentMethodNameIncludes || "Rechnung"}”
+            </s-list-item>
+            <s-list-item>
+              <strong>Eligibility</strong>: customer has tag “b2b” OR shipping address company is not empty
+            </s-list-item>
+          </s-unordered-list>
+        </s-card>
+      </s-section>
+
+      <s-section slot="aside" heading="Next steps">
+        <s-card>
+          <s-unordered-list>
+            <s-list-item>
+              <strong>Test</strong>: place two test checkouts (one with company filled, one without).
+            </s-list-item>
+            <s-list-item>
+              <strong>Security</strong>: settings are stored per shop in a Shop metafield.
+            </s-list-item>
+            <s-list-item>
+              <strong>Publish readiness</strong>: add clear help text, consistent navigation, and predictable behavior.
+            </s-list-item>
+          </s-unordered-list>
+        </s-card>
       </s-section>
     </s-page>
   );

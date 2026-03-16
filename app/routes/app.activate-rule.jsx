@@ -9,6 +9,11 @@ const DEFAULT_CONFIG = {
 };
 
 export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  if (url.pathname === "/app/activate-rule") {
+    return Response.redirect(`/app/rules/payment${url.search}`, 302);
+  }
+
   const { admin } = await authenticate.admin(request);
 
   const response = await admin.graphql(
@@ -127,7 +132,8 @@ export const action = async ({ request }) => {
 };
 
 export default function ActivateRule() {
-  const { config } = useLoaderData();
+  const loaderData = useLoaderData();
+  const config = loaderData?.config ?? DEFAULT_CONFIG;
   const fetcher = useFetcher();
   const navigation = useNavigation();
   const [toggleChecked, setToggleChecked] = useState(Boolean(config.enabled));
@@ -150,7 +156,7 @@ export default function ActivateRule() {
       : null;
 
   return (
-    <s-page heading="Checkout rule settings">
+    <s-page heading="Payment rule">
       <s-section heading="B2B invoice rule">
         <s-card>
           <fetcher.Form
