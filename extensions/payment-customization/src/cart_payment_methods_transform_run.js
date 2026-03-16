@@ -53,10 +53,6 @@ export function cartPaymentMethodsTransformRun(input) {
 
   const allowInvoice = isB2B || hasCompany;
 
-  console.error("enabled", enabled);
-  console.error("paymentMethodNameIncludes", paymentMethodNameIncludes);
-
-
   // Wenn Kunde NICHT B2B ist → Rechnung verstecken
   if (!allowInvoice) {
 
